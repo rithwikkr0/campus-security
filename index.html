@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Alliance University — Visitor Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--a:#2563EB;--a2:#1D4ED8;--al:#EFF6FF;--ok:#16A34A;--err:#DC2626;--bg:#F1F5F9;--card:#fff;--bdr:#E2E8F0;--tx:#0F172A;--mu:#64748B}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--tx);padding-bottom:60px}
+    .mono{font-family:'JetBrains Mono',monospace}
+    .hdr{background:linear-gradient(135deg,#0F172A,#1E3A5F);padding:16px 20px;display:flex;align-items:center;gap:12px}
+    .hlogo{width:40px;height:40px;background:var(--a);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sbar{background:#1E293B;padding:7px 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#94A3B8}
+    .sdot{width:7px;height:7px;border-radius:50%;background:#22C55E;animation:pd 2s infinite}
+    @keyframes pd{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+    .wrap{max-width:500px;margin:0 auto;padding:24px 16px}
+    .slbl{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--mu);text-transform:uppercase;margin-bottom:14px}
+    .card{background:var(--card);border:1px solid var(--bdr);border-radius:18px;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+    .ctit{font-size:19px;font-weight:800;margin-bottom:4px}
+    .csub{font-size:13px;color:var(--mu);margin-bottom:22px;line-height:1.6}
+    .fld{margin-bottom:15px}
+    .fld label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+    .fld input,.fld select{width:100%;padding:12px 14px;border:1.5px solid var(--bdr);border-radius:10px;font-size:15px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--tx);background:#FAFAFA;transition:all .2s;outline:none}
+    .fld input:focus,.fld select:focus{border-color:var(--a);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+    .fld input::placeholder{color:#CBD5E1}
+    .ferr{font-size:11px;color:var(--err);margin-top:4px;display:none}
+    .fhint{font-size:11px;color:var(--mu);margin-top:4px}
+    .fld.er input,.fld.er select{border-color:var(--err)}
+    .fld.er .ferr{display:block}
+    .r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btnp{width:100%;padding:14px;background:var(--a);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btnp:hover{background:var(--a2);box-shadow:0 4px 14px rgba(37,99,235,.3)}
+    .btnp:disabled{background:#94A3B8;cursor:not-allowed;box-shadow:none}
+    .btns{width:100%;padding:13px;background:transparent;color:var(--a);border:1.5px solid var(--a);border-radius:12px;font-size:14px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .2s;margin-top:8px}
+    .btns:hover{background:var(--al)}
+    .sp{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .snav{display:flex;gap:8px;margin-bottom:22px}
+    .snav-i{flex:1;height:4px;border-radius:2px;background:var(--bdr);transition:background .3s}
+    .snav-i.on{background:var(--a)}
+    .snav-i.dn{background:#86EFAC}
+    .spage{display:none}
+    .spage.on{display:block}
+    .bkbtn{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;margin-bottom:16px;background:none;border:none;font-family:'Plus Jakarta Sans',sans-serif}
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+    .tag{padding:7px 14px;border:1.5px solid var(--bdr);border-radius:20px;font-size:12px;font-weight:600;color:var(--mu);cursor:pointer;transition:all .2s;background:var(--card);user-select:none}
+    .tag.on{background:var(--a);color:#fff;border-color:var(--a)}
+    .upzone{border:2px dashed var(--bdr);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+    .upzone:hover{border-color:var(--a);background:var(--al)}
+    .upzone.ok{border-color:var(--ok);background:#F0FDF4}
+    .pphoto{width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:none;border:3px solid var(--a)}
+    .tbox{background:#F8FAFC;border:1px solid var(--bdr);border-radius:10px;padding:14px;font-size:12px;color:var(--mu);line-height:1.7;margin-bottom:14px;max-height:90px;overflow-y:auto}
+    .cbrow{display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer}
+    .cbrow input{width:18px;height:18px;accent-color:var(--a)}
+    .cbrow span{font-size:13px;font-weight:500}
+    #qrs{display:none}
+    .qcard{background:linear-gradient(135deg,#0F172A,#1E3A5F);border-radius:20px;padding:28px 24px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+    .qcard::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(37,99,235,.12)}
+    .qwrap{background:#fff;border-radius:14px;padding:18px;display:inline-block;margin-bottom:16px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
+    .dcard{background:var(--card);border:1px solid var(--bdr);border-radius:16px;padding:20px;margin-bottom:12px}
+    .drow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F1F5F9}
+    .drow:last-child{border-bottom:none}
+    .dlbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+    .dval{font-size:13px;font-weight:600;text-align:right;max-width:240px}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+    .bpend{background:#FEF3C7;color:#92400E}
+    .bdot{width:6px;height:6px;border-radius:50%;background:currentColor}
+    .icrd{background:var(--al);border:1px solid #BFDBFE;border-radius:12px;padding:16px;margin-bottom:12px}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:#0F172A;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;transition:transform .4s cubic-bezier(.34,1.56,.64,1);z-index:999;box-shadow:0 8px 30px rgba(0,0,0,.25);white-space:nowrap}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.ok{background:#15803D}
+    .toast.er{background:var(--err)}
+    footer{text-align:center;padding:14px;font-size:11px;color:#CBD5E1;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--bdr)}
+  </style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hlogo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+  <div><div style="color:#fff;font-size:16px;font-weight:700">Alliance University</div><div style="color:#94A3B8;font-size:11px">Campus Security & Visitor Management</div></div>
+</div>
+<div class="sbar">
+  <div style="display:flex;align-items:center;gap:8px"><div class="sdot"></div><span>Gate 1 — Security Active</span></div>
+  <span id="clk" class="mono"></span>
+</div>
+
+<div class="wrap">
+  <div id="fms">
+    <p class="slbl">Visitor Registration</p>
+    <div class="snav"><div class="snav-i on" id="n1"></div><div class="snav-i" id="n2"></div><div class="snav-i" id="n3"></div></div>
+
+    <!-- Step 1 -->
+    <div class="spage on" id="p1">
+      <div class="card">
+        <div class="ctit">Personal Details</div>
+        <div class="csub">Step 1 of 3 — Who are you?</div>
+        <div class="fld" id="f-nm"><label>Full Name *</label><input id="nm" placeholder="Rahul Sharma" autocomplete="name"/><div class="ferr">Full name required.</div></div>
+        <div class="r2">
+          <div class="fld" id="f-ph"><label>Phone *</label><input id="ph" type="tel" placeholder="9876543210" maxlength="10"/><div class="ferr">10-digit required.</div></div>
+          <div class="fld"><label>Email</label><input id="em" type="email" placeholder="you@email.com"/></div>
+        </div>
+        <div class="fld" id="f-idt"><label>ID Type *</label>
+          <select id="idt"><option value="">Select ID proof</option><option>Aadhaar Card</option><option>PAN Card</option><option>Driving Licence</option><option>Passport</option><option>Voter ID</option></select>
+          <div class="ferr">Select an ID type.</div>
+        </div>
+        <div class="fld" id="f-idn"><label>ID Number *</label><input id="idn" placeholder="Enter ID number" class="mono"/><div class="ferr">ID number required.</div></div>
+        <button class="btnp" onclick="s2()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="spage" id="p2">
+      <button class="bkbtn" onclick="go(1)">← Back</button>
+      <div class="card">
+        <div class="ctit">Visit Details</div>
+        <div class="csub">Step 2 of 3 — Who are you visiting?</div>
+        <div class="fld" id="f-hi"><label>Host Student / Faculty ID *</label><input id="hi" placeholder="AU2021CS001" class="mono"/><div class="ferr">Host ID required.</div></div>
+        <div class="fld" id="f-hn"><label>Host Name *</label><input id="hn" placeholder="Full name of person you're visiting"/><div class="ferr">Host name required.</div></div>
+        <div class="fld">
+          <label>Purpose of Visit *</label>
+          <div class="tags">
+            <div class="tag" onclick="selp(this,'Academic')">📚 Academic</div>
+            <div class="tag" onclick="selp(this,'Personal')">👥 Personal</div>
+            <div class="tag" onclick="selp(this,'Official')">💼 Official</div>
+            <div class="tag" onclick="selp(this,'Delivery')">📦 Delivery</div>
+            <div class="tag" onclick="selp(this,'Interview')">🎯 Interview</div>
+            <div class="tag" onclick="selp(this,'Event')">🎉 Event</div>
+          </div>
+          <input type="hidden" id="pur"/>
+        </div>
+        <div class="r2">
+          <div class="fld"><label>Vehicle No.</label><input id="vn" placeholder="KA 01 AB 1234" class="mono" style="text-transform:uppercase"/><div class="fhint">Leave blank if on foot.</div></div>
+          <div class="fld"><label>Companions</label>
+            <select id="comp"><option value="0">0 (Solo)</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4+</option></select>
+          </div>
+        </div>
+        <button class="btnp" onclick="s3()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="spage" id="p3">
+      <button class="bkbtn" onclick="go(2)">← Back</button>
+      <div class="card">
+        <div class="ctit">Photo & Consent</div>
+        <div class="csub">Step 3 of 3 — Optional selfie for faster verification</div>
+        <div class="upzone" id="uz" onclick="document.getElementById('pi').click()">
+          <img id="pp" class="pphoto"/>
+          <svg id="ui" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round" style="margin:0 auto 8px;display:block"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <div style="font-size:13px;color:var(--mu)" id="ut">Tap to take selfie or upload</div>
+          <div style="font-size:11px;color:#CBD5E1;margin-top:3px">(Optional but recommended)</div>
+        </div>
+        <input type="file" id="pi" accept="image/*" capture="user" style="display:none" onchange="hphoto(this)"/>
+        <div class="tbox"><strong>Terms & Conditions</strong><br/>By registering at Alliance University, you agree: (1) Your personal data is stored securely for campus security only. (2) You consent to campus CCTV surveillance. (3) Visit data retained for 90 days. (4) False information results in denial and may be reported to authorities. (5) You agree to follow all campus rules and regulations during your visit. Alliance University reserves the right to deny entry.</div>
+        <label class="cbrow"><input type="checkbox" id="tc"/><span>I agree to the Terms & Conditions *</span></label>
+        <button class="btnp" id="subbtn" onclick="doSubmit()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          Generate Entry Pass
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Section -->
+  <div id="qrs">
+    <p class="slbl">Your Entry Pass</p>
+    <div class="qcard">
+      <div style="color:#fff;font-size:17px;font-weight:800;margin-bottom:4px">✅ Entry Pass Ready</div>
+      <div style="color:#94A3B8;font-size:12px;margin-bottom:18px">Show this QR code to the security guard at the gate</div>
+      <div class="qwrap"><div id="qrc"></div></div>
+      <div style="color:#F8FAFC;font-size:16px;font-weight:700;margin-bottom:4px" id="qnm"></div>
+      <div style="color:#64748B;font-size:10px;font-family:'JetBrains Mono',monospace;word-break:break-all;padding:0 10px" id="qid"></div>
+    </div>
+    <div class="dcard">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:14px;font-weight:800">Visitor Details</span>
+        <span class="badge bpend"><span class="bdot"></span>Awaiting Approval</span>
+      </div>
+      <div class="drow"><span class="dlbl">Name</span><span class="dval" id="dd-nm">—</span></div>
+      <div class="drow"><span class="dlbl">Phone</span><span class="dval mono" id="dd-ph">—</span></div>
+      <div class="drow"><span class="dlbl">ID Proof</span><span class="dval" id="dd-id">—</span></div>
+      <div class="drow"><span class="dlbl">Visiting</span><span class="dval" id="dd-ht">—</span></div>
+      <div class="drow"><span class="dlbl">Purpose</span><span class="dval" id="dd-pu">—</span></div>
+      <div class="drow"><span class="dlbl">Vehicle</span><span class="dval mono" id="dd-vn">—</span></div>
+      <div class="drow"><span class="dlbl">Companions</span><span class="dval" id="dd-co">—</span></div>
+      <div class="drow"><span class="dlbl">Registered</span><span class="dval mono" id="dd-tm">—</span></div>
+    </div>
+    <div class="icrd">
+      <div style="font-size:12px;font-weight:700;color:var(--a);margin-bottom:8px">📋 What happens next?</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px"><div style="width:20px;height:20px;min-width:20px;background:var(--a);color:#fff;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">1</div><div style="font-size:12px;color:#1E40AF;line-height:1.5">Show this screen to the security guard at the entrance gate.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px"><div style="width:20px;height:20px;min-width:20px;background:var(--a);color:#fff;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">2</div><div style="font-size:12px;color:#1E40AF;line-height:1.5">The guard will scan your QR code to verify your details.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:20px;height:20px;min-width:20px;background:var(--a);color:#fff;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">3</div><div style="font-size:12px;color:#1E40AF;line-height:1.5">Once approved, keep this screen open. You'll need it again at exit.</div></div>
+    </div>
+    <button class="btns" onclick="reset()">+ Register Another Visitor</button>
+  </div>
+</div>
+
+<footer>Alliance University · Campus Security System · B.Tech Final Year Project 2024–25</footer>
+<div class="toast" id="tst"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const db = getFirestore(initializeApp({apiKey:"AIzaSyAIDj0Je6k2iUe5IAsikiyeaQJFkz1ULL8",authDomain:"security-management-fefd8.firebaseapp.com",projectId:"security-management-fefd8",storageBucket:"security-management-fefd8.firebasestorage.app",messagingSenderId:"1031606708630",appId:"1:1031606708630:web:21e5b56092f380320f95b7"}));
+
+setInterval(()=>{document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})},1000);
+
+const T=(m,t='')=>{const e=document.getElementById('tst');e.textContent=m;e.className='toast '+t;setTimeout(()=>e.classList.add('show'),10);setTimeout(()=>e.classList.remove('show'),3500)};
+
+window.go=n=>{[1,2,3].forEach(i=>{document.getElementById('p'+i).classList.toggle('on',i===n);document.getElementById('n'+i).classList.toggle('on',i===n);document.getElementById('n'+i).classList.toggle('dn',i<n)})};
+
+window.s2=()=>{
+  const nm=document.getElementById('nm').value.trim(),ph=document.getElementById('ph').value.trim(),idt=document.getElementById('idt').value,idn=document.getElementById('idn').value.trim();
+  document.getElementById('f-nm').classList.toggle('er',!nm);
+  document.getElementById('f-ph').classList.toggle('er',!/^\d{10}$/.test(ph));
+  document.getElementById('f-idt').classList.toggle('er',!idt);
+  document.getElementById('f-idn').classList.toggle('er',!idn);
+  if(!nm||!/^\d{10}$/.test(ph)||!idt||!idn){T('Please fill all required fields.','er');return;}
+  go(2);
+};
+
+window.s3=()=>{
+  const hi=document.getElementById('hi').value.trim(),hn=document.getElementById('hn').value.trim(),pu=document.getElementById('pur').value;
+  document.getElementById('f-hi').classList.toggle('er',!hi);
+  document.getElementById('f-hn').classList.toggle('er',!hn);
+  if(!hi||!hn){T('Please fill all required fields.','er');return;}
+  if(!pu){T('Please select a purpose of visit.','er');return;}
+  go(3);
+};
+
+window.selp=(el,v)=>{document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));el.classList.add('on');document.getElementById('pur').value=v};
+
+window.hphoto=(input)=>{if(!input.files[0])return;const r=new FileReader();r.onload=e=>{const img=document.getElementById('pp');img.src=e.target.result;img.style.display='block';document.getElementById('ui').style.display='none';document.getElementById('ut').textContent='✓ Photo selected';document.getElementById('uz').classList.add('ok')};r.readAsDataURL(input.files[0])};
+
+document.getElementById('vn').addEventListener('input',function(){this.value=this.value.toUpperCase()});
+
+window.doSubmit=async()=>{
+  if(!document.getElementById('tc').checked){T('Please agree to the Terms & Conditions.','er');return;}
+  const btn=document.getElementById('subbtn');btn.disabled=true;btn.innerHTML='<div class="sp"></div> Saving...';
+  const d={
+    visitorName:document.getElementById('nm').value.trim(),
+    phone:document.getElementById('ph').value.trim(),
+    email:document.getElementById('em').value.trim()||'',
+    idType:document.getElementById('idt').value,
+    idNumber:document.getElementById('idn').value.trim(),
+    hostId:document.getElementById('hi').value.trim(),
+    hostName:document.getElementById('hn').value.trim(),
+    purpose:document.getElementById('pur').value,
+    vehicleNumber:document.getElementById('vn').value.trim()||'None',
+    companions:parseInt(document.getElementById('comp').value),
+    hasPhoto:document.getElementById('pp').style.display!=='none',
+    status:'Pending',entryTime:null,exitTime:null,
+    timestamp:serverTimestamp()
+  };
+  try{
+    const ref=await addDoc(collection(db,'visitors'),d);
+    showQR(ref.id,d);T('✓ Entry pass generated!','ok');
+  }catch(e){T('Error: '+e.message,'er');btn.disabled=false;btn.innerHTML='Generate Entry Pass';}
+};
+
+function showQR(id,d){
+  document.getElementById('fms').style.display='none';
+  document.getElementById('qrs').style.display='block';
+  document.getElementById('qrc').innerHTML='';
+  new QRCode(document.getElementById('qrc'),{text:id,width:200,height:200,colorDark:'#0F172A',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.H});
+  document.getElementById('qnm').textContent=d.visitorName;
+  document.getElementById('qid').textContent='Entry ID: '+id;
+  document.getElementById('dd-nm').textContent=d.visitorName;
+  document.getElementById('dd-ph').textContent=d.phone;
+  document.getElementById('dd-id').textContent=d.idType+' · '+d.idNumber;
+  document.getElementById('dd-ht').textContent=d.hostName+' ('+d.hostId+')';
+  document.getElementById('dd-pu').textContent=d.purpose;
+  document.getElementById('dd-vn').textContent=d.vehicleNumber;
+  document.getElementById('dd-co').textContent=d.companions+' additional person(s)';
+  document.getElementById('dd-tm').textContent=new Date().toLocaleString('en-IN');
+}
+
+window.reset=()=>{
+  document.getElementById('fms').style.display='block';
+  document.getElementById('qrs').style.display='none';
+  document.getElementById('subbtn').disabled=false;
+  document.getElementById('subbtn').innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>Generate Entry Pass';
+  go(1);
+  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pur').value='';
+  document.getElementById('tc').checked=false;
+  document.getElementById('pp').style.display='none';
+  document.getElementById('ui').style.display='block';
+  document.getElementById('ut').textContent='Tap to take selfie or upload';
+  document.getElementById('uz').classList.remove('ok');
+  document.getElementById('fms').querySelectorAll('input,select').forEach(i=>i.value='');
+};
+</script>
+</body>
+</html>

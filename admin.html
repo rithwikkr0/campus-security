@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — Alliance University Security</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#0A0F1E;--s1:#111827;--s2:#1F2937;--bdr:#1F2937;--bdr2:#374151;--tx:#F9FAFB;--mu:#9CA3AF;--a:#3B82F6;--ok:#10B981;--er:#EF4444;--wn:#F59E0B;--pu:#8B5CF6}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+    .mono{font-family:'JetBrains Mono',monospace}
+    .sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;background:var(--s1);border-right:1px solid var(--bdr);display:flex;flex-direction:column;z-index:100}
+    .slogo{padding:24px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px}
+    .slogo-ic{width:36px;height:36px;background:var(--a);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .snav{flex:1;padding:16px 12px;overflow-y:auto}
+    .snav-lbl{font-size:10px;font-weight:700;color:var(--mu);letter-spacing:.08em;text-transform:uppercase;padding:0 8px;margin:16px 0 6px}
+    .sni{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;transition:all .2s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Plus Jakarta Sans',sans-serif}
+    .sni:hover{background:var(--s2);color:var(--tx)}
+    .sni.on{background:rgba(59,130,246,.15);color:var(--a)}
+    .sni svg{width:16px;height:16px;flex-shrink:0}
+    .sbot{padding:16px;border-top:1px solid var(--bdr)}
+    .guard-info{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border-radius:10px;cursor:pointer}
+    .giav{width:32px;height:32px;border-radius:50%;background:var(--a);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+    .main{margin-left:240px;min-height:100vh;display:flex;flex-direction:column}
+    .topbar{background:var(--s1);border-bottom:1px solid var(--bdr);height:60px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .content{flex:1;padding:28px;overflow-y:auto}
+    .page{display:none}
+    .page.on{display:block}
+    .pg-title{font-size:22px;font-weight:800;margin-bottom:4px}
+    .pg-sub{font-size:13px;color:var(--mu);margin-bottom:28px}
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    @media(max-width:1100px){.stat-row{grid-template-columns:repeat(2,1fr)}}
+    .sc{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:20px;position:relative;overflow:hidden}
+    .sc::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08}
+    .sc.g::before{background:var(--ok)}
+    .sc.r::before{background:var(--er)}
+    .sc.y::before{background:var(--wn)}
+    .sc.b::before{background:var(--a)}
+    .sc.p::before{background:var(--pu)}
+    .sv{font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+    .sk{font-size:12px;color:var(--mu);font-weight:600}
+    .sc.g .sv{color:var(--ok)}.sc.r .sv{color:var(--er)}.sc.y .sv{color:var(--wn)}.sc.b .sv{color:var(--a)}.sc.p .sv{color:var(--pu)}
+    .stag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;display:inline-block;margin-top:6px}
+    .stag.g{background:rgba(16,185,129,.15);color:var(--ok)}
+    .stag.r{background:rgba(239,68,68,.15);color:var(--er)}
+    .stag.y{background:rgba(245,158,11,.15);color:var(--wn)}
+    .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+    @media(max-width:900px){.charts-row{grid-template-columns:1fr}}
+    .cbox{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:20px}
+    .cbox-title{font-size:14px;font-weight:700;margin-bottom:16px}
+    .table-wrap{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;margin-bottom:20px}
+    .tbl-head{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .tbl-title{font-size:14px;font-weight:700}
+    .tbl-actions{display:flex;gap:8px;align-items:center}
+    table{width:100%;border-collapse:collapse}
+    th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--bdr)}
+    td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--bdr2)}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700}
+    .b-ok{background:rgba(16,185,129,.15);color:var(--ok)}
+    .b-er{background:rgba(239,68,68,.15);color:var(--er)}
+    .b-wn{background:rgba(245,158,11,.15);color:var(--wn)}
+    .b-mu{background:rgba(156,163,175,.15);color:var(--mu)}
+    .b-pu{background:rgba(139,92,246,.15);color:var(--pu)}
+    .bdot{width:5px;height:5px;border-radius:50%;background:currentColor}
+    .srch{padding:8px 14px;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--tx);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;width:220px}
+    .srch:focus{border-color:var(--a)}
+    .srch::placeholder{color:#4B5563}
+    .filt{padding:8px 12px;background:var(--s2);border:1px solid var(--bdr2);border-radius:8px;color:var(--tx);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;cursor:pointer}
+    .btnx{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;border:none;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+    .btnx.b{background:var(--a);color:#fff}.btnx.b:hover{background:#1D4ED8}
+    .btnx.r{background:rgba(239,68,68,.15);color:var(--er);border:1px solid rgba(239,68,68,.3)}.btnx.r:hover{background:rgba(239,68,68,.25)}
+    .btnx.g{background:rgba(16,185,129,.15);color:var(--ok);border:1px solid rgba(16,185,129,.3)}.btnx.g:hover{background:rgba(16,185,129,.25)}
+    .btnx.y{background:rgba(245,158,11,.15);color:var(--wn);border:1px solid rgba(245,158,11,.3)}.btnx.y:hover{background:rgba(245,158,11,.25)}
+    .loading{text-align:center;padding:32px;color:var(--mu);font-size:14px}
+    .sp{display:inline-block;width:20px;height:20px;border:2.5px solid var(--bdr2);border-top-color:var(--a);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .guard-tbl .grow{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bdr2)}
+    .guard-tbl .grow:last-child{border-bottom:none}
+    .gav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;display:none;align-items:center;justify-content:center}
+    .modal-bg.on{display:flex}
+    .modal{background:var(--s1);border:1px solid var(--bdr2);border-radius:20px;padding:28px;max-width:500px;width:92%;max-height:80vh;overflow-y:auto}
+    .modal-title{font-size:18px;font-weight:800;margin-bottom:4px}
+    .modal-sub{font-size:13px;color:var(--mu);margin-bottom:20px}
+    .mfld{margin-bottom:14px}
+    .mfld label{display:block;font-size:12px;font-weight:700;color:var(--mu);margin-bottom:5px}
+    .mfld input,.mfld select{width:100%;padding:11px 14px;background:var(--s2);border:1.5px solid var(--bdr2);border-radius:9px;color:var(--tx);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;outline:none}
+    .mfld input:focus,.mfld select:focus{border-color:var(--a)}
+    .mrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .drow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr2)}
+    .drow:last-child{border-bottom:none}
+    .dlbl{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
+    .dval{font-size:13px;font-weight:600;text-align:right}
+    .toast{position:fixed;bottom:24px;right:24px;background:#1F2937;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;transform:translateY(100px);transition:transform .4s cubic-bezier(.34,1.56,.64,1);z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+    .toast.show{transform:translateY(0)}
+    .toast.ok{background:#065F46}.toast.er{background:#7F1D1D}.toast.wn{background:#78350F}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:3px}
+    .empty-state{text-align:center;padding:40px 20px;color:var(--mu)}
+    .empty-state svg{margin:0 auto 12px;display:block;opacity:.3}
+    .chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(59,130,246,.15);color:var(--a)}
+    @media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="slogo">
+    <div class="slogo-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div><div style="font-size:14px;font-weight:700">Admin Panel</div><div style="font-size:10px;color:var(--mu)">Alliance University</div></div>
+  </div>
+  <div class="snav">
+    <div class="snav-lbl">Main</div>
+    <button class="sni on" onclick="showPage('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="sni" onclick="showPage('visitors')" id="nav-visitors">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      All Visitors
+    </button>
+    <button class="sni" onclick="showPage('live')" id="nav-live">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49"/><path d="M7.76 16.24a6 6 0 0 1 0-8.49"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 19.07a10 10 0 0 1 0-14.14"/></svg>
+      Live Visitors
+    </button>
+    <div class="snav-lbl">Security</div>
+    <button class="sni" onclick="showPage('guards')" id="nav-guards">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Guard Management
+    </button>
+    <button class="sni" onclick="showPage('shifts')" id="nav-shifts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Shift Logs
+    </button>
+    <div class="snav-lbl">Reports</div>
+    <button class="sni" onclick="showPage('reports')" id="nav-reports">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </button>
+  </div>
+  <div class="sbot">
+    <div class="guard-info" onclick="logout()">
+      <div class="giav" id="adminav">A</div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700" id="adminname">Admin</div><div style="font-size:11px;color:var(--mu)">Administrator</div></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="font-size:15px;font-weight:700" id="pg-hd">Dashboard</div>
+      <div style="font-size:11px;color:var(--mu)" id="pg-time"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="btnx b" onclick="refreshAll()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Refresh
+      </button>
+      <div style="font-size:13px;color:var(--mu);font-family:'JetBrains Mono',monospace" id="adclk">--:--:--</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page on" id="page-dashboard">
+      <div class="pg-title">Welcome back, <span id="wname">Admin</span></div>
+      <div class="pg-sub">Here's today's overview at Alliance University</div>
+      <div class="stat-row" id="stats-row">
+        <div class="sc b"><div class="sv" id="st-total">—</div><div class="sk">Total Visitors Today</div><div class="stag b" id="st-total-tag">Loading...</div></div>
+        <div class="sc g"><div class="sv" id="st-in">—</div><div class="sk">Currently Inside</div><div class="stag g">Checked In</div></div>
+        <div class="sc y"><div class="sv" id="st-pend">—</div><div class="sk">Awaiting Entry</div><div class="stag y">Pending</div></div>
+        <div class="sc r"><div class="sv" id="st-den">—</div><div class="sk">Denied Today</div><div class="stag r">Denied</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="cbox">
+          <div class="cbox-title">Visits by Purpose</div>
+          <canvas id="purpose-chart" height="200"></canvas>
+        </div>
+        <div class="cbox">
+          <div class="cbox-title">Status Breakdown</div>
+          <canvas id="status-chart" height="200"></canvas>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="tbl-head">
+          <div class="tbl-title">Recent Visitors</div>
+          <button class="btnx b" onclick="showPage('visitors')">View All →</button>
+        </div>
+        <div id="recent-tbl"><div class="loading"><span class="sp"></span>Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ALL VISITORS -->
+    <div class="page" id="page-visitors">
+      <div class="pg-title">All Visitors</div>
+      <div class="pg-sub" id="vis-count">Loading visitor records...</div>
+      <div class="table-wrap">
+        <div class="tbl-head">
+          <div class="tbl-title">Visitor Records</div>
+          <div class="tbl-actions">
+            <input class="srch" id="vtxt" placeholder="Search name / phone..." oninput="filterVisitors()"/>
+            <select class="filt" id="vstatus" onchange="filterVisitors()">
+              <option value="">All Status</option>
+              <option>Pending</option>
+              <option>Checked In</option>
+              <option>Checked Out</option>
+              <option>Denied</option>
+            </select>
+            <button class="btnx g" onclick="exportCSV()">⬇ CSV</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Visitor</th><th>Phone</th><th>Purpose</th>
+              <th>Visiting</th><th>Vehicle</th><th>Status</th><th>Time</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="vtbody"><tr><td colspan="8" class="loading"><span class="sp"></span>Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE -->
+    <div class="page" id="page-live">
+      <div class="pg-title">Live Visitors on Campus</div>
+      <div class="pg-sub">Visitors currently with status "Checked In"</div>
+      <div id="live-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+        <div class="loading"><span class="sp"></span>Loading...</div>
+      </div>
+    </div>
+
+    <!-- GUARDS -->
+    <div class="page" id="page-guards">
+      <div class="pg-title">Guard Management</div>
+      <div class="pg-sub">Manage security personnel credentials and assignments</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+        <button class="btnx b" onclick="showAddGuard()">+ Add Guard</button>
+      </div>
+      <div class="table-wrap">
+        <div class="tbl-head"><div class="tbl-title">Security Personnel</div></div>
+        <table>
+          <thead><tr><th>Guard</th><th>ID</th><th>Gate</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+          <tbody id="guard-tbody">
+            <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="gav" style="background:#2563EB">R</div><div><div style="font-weight:700">Rajesh Kumar</div><div style="font-size:11px;color:var(--mu)">Senior Guard</div></div></div></td><td class="mono">GUARD001</td><td>Gate 1</td><td><span class="badge b-ok"><span class="bdot"></span>Active</span></td><td class="mono" style="font-size:11px;color:var(--mu)">Today</td><td><button class="btnx y" style="font-size:11px">Edit</button></td></tr>
+            <tr><td><div style="display:flex;align-items:center;gap:10px"><div class="gav" style="background:#8B5CF6">S</div><div><div style="font-weight:700">Suresh Sharma</div><div style="font-size:11px;color:var(--mu)">Night Guard</div></div></div></td><td class="mono">GUARD002</td><td>Gate 2</td><td><span class="badge b-wn"><span class="bdot"></span>On Break</span></td><td class="mono" style="font-size:11px;color:var(--mu)">Today</td><td><button class="btnx y" style="font-size:11px">Edit</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SHIFTS -->
+    <div class="page" id="page-shifts">
+      <div class="pg-title">Shift Logs</div>
+      <div class="pg-sub">Guard login/logout history from Firebase</div>
+      <div class="table-wrap">
+        <div class="tbl-head"><div class="tbl-title">Recent Shifts</div></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Guard</th><th>Gate</th><th>Login Time</th><th>Status</th></tr></thead>
+            <tbody id="shift-tbody"><tr><td colspan="4" class="loading"><span class="sp"></span>Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="pg-title">Analytics & Reports</div>
+      <div class="pg-sub">Visitor statistics and security metrics</div>
+      <div class="stat-row" id="rep-stats">
+        <div class="sc b"><div class="sv" id="rep-total">—</div><div class="sk">Total All Time</div></div>
+        <div class="sc g"><div class="sv" id="rep-today">—</div><div class="sk">Today</div></div>
+        <div class="sc p"><div class="sv" id="rep-week">—</div><div class="sk">This Week</div></div>
+        <div class="sc y"><div class="sv" id="rep-veh">—</div><div class="sk">With Vehicle</div></div>
+      </div>
+      <div class="charts-row">
+        <div class="cbox" style="grid-column:1/-1">
+          <div class="cbox-title">Visitor Activity — Last 7 Days</div>
+          <canvas id="week-chart" height="120"></canvas>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="tbl-head">
+          <div class="tbl-title">Top Purpose of Visits</div>
+        </div>
+        <div id="purpose-breakdown" style="padding:16px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Visitor detail modal -->
+<div class="modal-bg" id="vis-modal">
+  <div class="modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title" id="md-name">Visitor Details</div>
+      <button onclick="document.getElementById('vis-modal').classList.remove('on')" style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:20px">×</button>
+    </div>
+    <div class="modal-sub" id="md-sub">—</div>
+    <div id="md-body"></div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btnx g" id="md-approve" onclick="modalAction('approve')">✓ Approve</button>
+      <button class="btnx r" id="md-deny" onclick="modalAction('deny')">✗ Deny</button>
+      <button class="btnx y" id="md-checkout" onclick="modalAction('checkout')">Exit Campus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Guard modal -->
+<div class="modal-bg" id="guard-modal">
+  <div class="modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="modal-title">Add New Guard</div>
+      <button onclick="document.getElementById('guard-modal').classList.remove('on')" style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:20px">×</button>
+    </div>
+    <div class="modal-sub">Add credentials for a new security guard</div>
+    <div class="mrow">
+      <div class="mfld"><label>Full Name</label><input id="g-name" placeholder="Guard's full name"/></div>
+      <div class="mfld"><label>Guard ID</label><input id="g-id" placeholder="GUARD003" class="mono"/></div>
+    </div>
+    <div class="mrow">
+      <div class="mfld"><label>Password</label><input id="g-pwd" type="password" placeholder="Set password"/></div>
+      <div class="mfld"><label>Assigned Gate</label>
+        <select id="g-gate"><option>Gate 1</option><option>Gate 2</option><option>Gate 3</option><option>Gate 4</option></select>
+      </div>
+    </div>
+    <div class="mfld"><label>Role / Designation</label><input id="g-role" placeholder="e.g. Senior Guard, Night Guard"/></div>
+    <button class="btnx b" style="width:100%;padding:13px;font-size:14px;justify-content:center;margin-top:4px" onclick="saveGuard()">Save Guard</button>
+    <div style="margin-top:10px;font-size:11px;color:var(--mu);text-align:center">Note: In production, use Firebase Authentication for proper credential management.</div>
+  </div>
+</div>
+
+<div class="toast" id="tst"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const db = getFirestore(initializeApp({apiKey:"AIzaSyAIDj0Je6k2iUe5IAsikiyeaQJFkz1ULL8",authDomain:"security-management-fefd8.firebaseapp.com",projectId:"security-management-fefd8",storageBucket:"security-management-fefd8.firebasestorage.app",messagingSenderId:"1031606708630",appId:"1:1031606708630:web:21e5b56092f380320f95b7"}));
+
+const sess=JSON.parse(sessionStorage.getItem('guard_session')||'null');
+if(!sess||sess.role!=='admin'){window.location.href='guard-login.html';}
+document.getElementById('adminname').textContent=sess?.name||'Admin';
+document.getElementById('adminav').textContent=(sess?.name||'A')[0].toUpperCase();
+document.getElementById('wname').textContent=sess?.name||'Admin';
+
+setInterval(()=>{const n=new Date();document.getElementById('adclk').textContent=n.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('pg-time').textContent=n.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'})},1000);
+
+const T=(m,t='')=>{const e=document.getElementById('tst');e.textContent=m;e.className='toast '+t;setTimeout(()=>e.classList.add('show'),10);setTimeout(()=>e.classList.remove('show'),3500)};
+
+let allVisitors=[];let curModalId=null;
+
+window.showPage=(pg)=>{
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sni').forEach(n=>n.classList.remove('on'));
+  document.getElementById('page-'+pg).classList.add('on');
+  document.getElementById('nav-'+pg).classList.add('on');
+  document.getElementById('pg-hd').textContent={dashboard:'Dashboard',visitors:'All Visitors',live:'Live Visitors',guards:'Guard Management',shifts:'Shift Logs',reports:'Analytics'}[pg]||pg;
+  if(pg==='visitors') loadVisitors();
+  if(pg==='dashboard') loadDashboard();
+  if(pg==='live') loadLive();
+  if(pg==='shifts') loadShifts();
+  if(pg==='reports') loadReports();
+};
+
+async function loadAll(){
+  const snap=await getDocs(collection(db,'visitors'));
+  allVisitors=[];
+  snap.forEach(d=>allVisitors.push({id:d.id,...d.data()}));
+  return allVisitors;
+}
+
+async function loadDashboard(){
+  const all=await loadAll();
+  const today=new Date().toDateString();
+  const tod=all.filter(v=>v.timestamp?.toDate?.().toDateString()===today);
+  const total=tod.length,cin=tod.filter(v=>v.status==='Checked In').length,pend=tod.filter(v=>v.status==='Pending').length,den=tod.filter(v=>v.status==='Denied').length;
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-in').textContent=cin;
+  document.getElementById('st-pend').textContent=pend;
+  document.getElementById('st-den').textContent=den;
+  document.getElementById('st-total-tag').textContent=total+' registered today';
+
+  // Purpose chart
+  const purps={};tod.forEach(v=>{purps[v.purpose||'Unknown']=(purps[v.purpose||'Unknown']||0)+1});
+  const ctx1=document.getElementById('purpose-chart').getContext('2d');
+  if(window._pc1)window._pc1.destroy();
+  window._pc1=new Chart(ctx1,{type:'doughnut',data:{labels:Object.keys(purps),datasets:[{data:Object.values(purps),backgroundColor:['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4'],borderWidth:0}]},options:{plugins:{legend:{position:'right',labels:{color:'#9CA3AF',font:{size:11},boxWidth:10}}},responsive:true}});
+
+  // Status chart
+  const ctx2=document.getElementById('status-chart').getContext('2d');
+  if(window._pc2)window._pc2.destroy();
+  window._pc2=new Chart(ctx2,{type:'bar',data:{labels:['Pending','Checked In','Checked Out','Denied'],datasets:[{data:[pend,cin,tod.filter(v=>v.status==='Checked Out').length,den],backgroundColor:['#F59E0B88','#10B98188','#3B82F688','#EF444488'],borderColor:['#F59E0B','#10B981','#3B82F6','#EF4444'],borderWidth:1,borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#9CA3AF'},grid:{color:'#1F2937'}},x:{ticks:{color:'#9CA3AF'},grid:{display:false}}},responsive:true}});
+
+  // Recent table
+  const recent=allVisitors.slice().sort((a,b)=>(b.timestamp?.seconds||0)-(a.timestamp?.seconds||0)).slice(0,8);
+  document.getElementById('recent-tbl').innerHTML=renderTable(recent);
+}
+
+function renderTable(rows){
+  if(!rows.length)return'<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><div>No visitors found.</div></div>';
+  const status_class={Pending:'b-wn','Checked In':'b-ok','Checked Out':'b-mu',Denied:'b-er'};
+  return`<table><thead><tr><th>Visitor</th><th>Phone</th><th>Purpose</th><th>Visiting</th><th>Status</th><th>Time</th><th>Action</th></tr></thead><tbody>${rows.map(v=>`<tr>
+    <td><div style="font-weight:700">${v.visitorName||'—'}</div><div style="font-size:11px;color:var(--mu)">${v.idType||''}</div></td>
+    <td class="mono">${v.phone||'—'}</td>
+    <td><span class="chip">${v.purpose||'—'}</span></td>
+    <td style="font-size:12px">${v.hostName||'—'}<br><span class="mono" style="font-size:10px;color:var(--mu)">${v.hostId||''}</span></td>
+    <td><span class="badge ${status_class[v.status]||'b-mu'}"><span class="bdot"></span>${v.status||'—'}</span></td>
+    <td style="font-size:11px;color:var(--mu)">${v.timestamp?.toDate?.().toLocaleString('en-IN')||'—'}</td>
+    <td><button class="btnx b" style="font-size:11px" onclick="openModal('${v.id}')">View</button></td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+async function loadVisitors(){
+  const all=await loadAll();
+  document.getElementById('vis-count').textContent=all.length+' total visitor records';
+  window._visCache=all;
+  filterVisitors();
+}
+
+window.filterVisitors=()=>{
+  const txt=(document.getElementById('vtxt').value||'').toLowerCase();
+  const st=document.getElementById('vstatus').value;
+  let rows=(window._visCache||[]).filter(v=>{
+    const nm=(v.visitorName||'').toLowerCase().includes(txt)||(v.phone||'').includes(txt);
+    const sv=!st||v.status===st;
+    return nm&&sv;
+  });
+  document.getElementById('vtbody').innerHTML=rows.length?rows.slice().sort((a,b)=>(b.timestamp?.seconds||0)-(a.timestamp?.seconds||0)).map(v=>{
+    const sc={Pending:'b-wn','Checked In':'b-ok','Checked Out':'b-mu',Denied:'b-er'};
+    return`<tr>
+      <td><div style="font-weight:700">${v.visitorName||'—'}</div><div style="font-size:11px;color:var(--mu)">${v.idType||'No ID'} · ${v.idNumber||''}</div></td>
+      <td class="mono">${v.phone||'—'}</td>
+      <td><span class="chip">${v.purpose||'—'}</span></td>
+      <td style="font-size:12px">${v.hostName||'—'}</td>
+      <td class="mono" style="font-size:11px">${v.vehicleNumber||'None'}</td>
+      <td><span class="badge ${sc[v.status]||'b-mu'}"><span class="bdot"></span>${v.status||'—'}</span></td>
+      <td style="font-size:11px;color:var(--mu)">${v.timestamp?.toDate?.().toLocaleString('en-IN')||'—'}</td>
+      <td><button class="btnx b" style="font-size:11px" onclick="openModal('${v.id}')">Details</button></td>
+    </tr>`}).join(''):'<tr><td colspan="8" class="empty-state">No matching visitors found.</td></tr>';
+};
+
+async function loadLive(){
+  const all=await loadAll();
+  const live=all.filter(v=>v.status==='Checked In');
+  const grid=document.getElementById('live-grid');
+  if(!live.length){grid.innerHTML='<div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg><div>No visitors currently on campus.</div></div>';return;}
+  grid.innerHTML=live.map(v=>`
+    <div style="background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:18px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px">${(v.visitorName||'?')[0].toUpperCase()}</div>
+        <div><div style="font-weight:700;font-size:15px">${v.visitorName||'—'}</div><div style="font-size:11px;color:var(--mu)">${v.phone||'—'}</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:4px">Visiting: <span style="color:var(--tx);font-weight:600">${v.hostName||v.hostId||'—'}</span></div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:12px">Purpose: <span class="chip">${v.purpose||'—'}</span></div>
+      <div style="font-size:11px;color:var(--mu);margin-bottom:10px">Entry: <span class="mono" style="color:var(--tx)">${v.entryTime?new Date(v.entryTime).toLocaleTimeString('en-IN'):'—'}</span></div>
+      <button class="btnx y" style="width:100%;justify-content:center" onclick="quickCheckout('${v.id}','${v.visitorName||''}')">Mark as Checked Out</button>
+    </div>`).join('');
+}
+
+window.quickCheckout=async(id,name)=>{
+  await updateDoc(doc(db,'visitors',id),{status:'Checked Out',exitTime:new Date().toISOString()});
+  T('✓ '+name+' checked out.','ok');loadLive();
+};
+
+async function loadShifts(){
+  try{
+    const snap=await getDocs(collection(db,'guard_shifts'));
+    const shifts=[];snap.forEach(d=>shifts.push({id:d.id,...d.data()}));
+    shifts.sort((a,b)=>(b.loginTime?.seconds||0)-(a.loginTime?.seconds||0));
+    document.getElementById('shift-tbody').innerHTML=shifts.length?shifts.map(s=>`<tr>
+      <td><div style="font-weight:700">${s.guardName||'—'}</div><div style="font-size:11px;color:var(--mu)">${s.guardId||'—'}</div></td>
+      <td>${s.gate||'—'}</td>
+      <td class="mono" style="font-size:12px">${s.loginTime?.toDate?.().toLocaleString('en-IN')||'—'}</td>
+      <td><span class="badge b-ok"><span class="bdot"></span>${s.status||'Active'}</span></td>
+    </tr>`).join(''):'<tr><td colspan="4" class="empty-state">No shift logs found.</td></tr>';
+  }catch(e){document.getElementById('shift-tbody').innerHTML='<tr><td colspan="4" style="padding:16px;color:var(--er)">Error loading shifts: '+e.message+'</td></tr>';}
+}
+
+async function loadReports(){
+  const all=await loadAll();
+  const today=new Date().toDateString();
+  const tod=all.filter(v=>v.timestamp?.toDate?.().toDateString()===today);
+  const week=new Date();week.setDate(week.getDate()-7);
+  const wk=all.filter(v=>v.timestamp?.toDate?.()>=week);
+  const veh=all.filter(v=>v.vehicleNumber&&v.vehicleNumber!=='None');
+  document.getElementById('rep-total').textContent=all.length;
+  document.getElementById('rep-today').textContent=tod.length;
+  document.getElementById('rep-week').textContent=wk.length;
+  document.getElementById('rep-veh').textContent=veh.length;
+
+  // Week chart
+  const days=[],counts=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric'}));counts.push(all.filter(v=>v.timestamp?.toDate?.().toDateString()===d.toDateString()).length);}
+  const ctx=document.getElementById('week-chart').getContext('2d');
+  if(window._wkc)window._wkc.destroy();
+  window._wkc=new Chart(ctx,{type:'line',data:{labels:days,datasets:[{label:'Visitors',data:counts,borderColor:'#3B82F6',backgroundColor:'rgba(59,130,246,.1)',fill:true,tension:.4,pointBackgroundColor:'#3B82F6',pointRadius:5}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#9CA3AF'},grid:{color:'#1F2937'},beginAtZero:true},x:{ticks:{color:'#9CA3AF'},grid:{display:false}}},responsive:true}});
+
+  // Purpose breakdown
+  const purps={};all.forEach(v=>{purps[v.purpose||'Unknown']=(purps[v.purpose||'Unknown']||0)+1});
+  const sorted=Object.entries(purps).sort((a,b)=>b[1]-a[1]);
+  const max=sorted[0]?.[1]||1;
+  document.getElementById('purpose-breakdown').innerHTML=sorted.map(([p,c])=>`
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">${p}</span><span class="mono" style="font-size:12px;color:var(--mu)">${c} visits</span></div>
+      <div style="background:var(--bdr2);border-radius:4px;height:8px"><div style="background:var(--a);height:8px;border-radius:4px;width:${(c/max*100).toFixed(0)}%;transition:width .5s"></div></div>
+    </div>`).join('');
+}
+
+// Modal
+window.openModal=async(id)=>{
+  const v=allVisitors.find(x=>x.id===id)||(await getDoc(doc(db,'visitors',id))).data();
+  curModalId=id;
+  document.getElementById('md-name').textContent=v?.visitorName||'Visitor';
+  document.getElementById('md-sub').textContent=(v?.idType||'')+(v?.idNumber?' · '+v.idNumber:'');
+  const sc={Pending:'b-wn','Checked In':'b-ok','Checked Out':'b-mu',Denied:'b-er'};
+  document.getElementById('md-body').innerHTML=`
+    <div class="drow"><span class="dlbl">Status</span><span class="dval"><span class="badge ${sc[v?.status]||'b-mu'}">${v?.status||'—'}</span></span></div>
+    <div class="drow"><span class="dlbl">Phone</span><span class="dval mono">${v?.phone||'—'}</span></div>
+    <div class="drow"><span class="dlbl">Email</span><span class="dval">${v?.email||'Not provided'}</span></div>
+    <div class="drow"><span class="dlbl">ID Proof</span><span class="dval">${v?.idType||'—'}</span></div>
+    <div class="drow"><span class="dlbl">Visiting</span><span class="dval">${v?.hostName||'—'} (${v?.hostId||'—'})</span></div>
+    <div class="drow"><span class="dlbl">Purpose</span><span class="dval">${v?.purpose||'—'}</span></div>
+    <div class="drow"><span class="dlbl">Vehicle</span><span class="dval mono">${v?.vehicleNumber||'None'}</span></div>
+    <div class="drow"><span class="dlbl">Companions</span><span class="dval">${v?.companions||0} person(s)</span></div>
+    <div class="drow"><span class="dlbl">Entry Time</span><span class="dval mono">${v?.entryTime?new Date(v.entryTime).toLocaleString('en-IN'):'Not yet entered'}</span></div>
+    <div class="drow"><span class="dlbl">Exit Time</span><span class="dval mono">${v?.exitTime?new Date(v.exitTime).toLocaleString('en-IN'):'Still on campus'}</span></div>
+    <div class="drow"><span class="dlbl">Registered</span><span class="dval mono">${v?.timestamp?.toDate?.().toLocaleString('en-IN')||'—'}</span></div>
+  `;
+  document.getElementById('md-approve').style.display=v?.status==='Pending'?'inline-flex':'none';
+  document.getElementById('md-deny').style.display=v?.status==='Pending'?'inline-flex':'none';
+  document.getElementById('md-checkout').style.display=v?.status==='Checked In'?'inline-flex':'none';
+  document.getElementById('vis-modal').classList.add('on');
+};
+
+window.modalAction=async(action)=>{
+  if(!curModalId)return;
+  const updates={approve:{status:'Checked In',entryTime:new Date().toISOString()},deny:{status:'Denied'},checkout:{status:'Checked Out',exitTime:new Date().toISOString()}};
+  await updateDoc(doc(db,'visitors',curModalId),updates[action]);
+  T('✓ Visitor status updated.','ok');
+  document.getElementById('vis-modal').classList.remove('on');
+  loadDashboard();loadVisitors();
+};
+
+window.exportCSV=()=>{
+  const rows=window._visCache||allVisitors;
+  const hdr='Name,Phone,ID Type,ID Number,Host ID,Host Name,Purpose,Vehicle,Companions,Status,Entry Time,Registered';
+  const csv=rows.map(v=>[v.visitorName,v.phone,v.idType,v.idNumber,v.hostId,v.hostName,v.purpose,v.vehicleNumber,v.companions,v.status,v.entryTime||'',v.timestamp?.toDate?.().toISOString()||''].map(x=>'"'+(x||'')+'"').join(',')).join('\n');
+  const blob=new Blob([hdr+'\n'+csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='visitors_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  T('CSV downloaded!','ok');
+};
+
+window.showAddGuard=()=>document.getElementById('guard-modal').classList.add('on');
+window.saveGuard=()=>{
+  const n=document.getElementById('g-name').value.trim(),id=document.getElementById('g-id').value.trim();
+  if(!n||!id){T('Name and ID required.','er');return;}
+  T('Guard added! (Note: update credentials in guard-login.html)','ok');
+  document.getElementById('guard-modal').classList.remove('on');
+};
+
+window.refreshAll=()=>{const p=document.querySelector('.sni.on');p?.click();T('Data refreshed.','ok');};
+window.logout=()=>{sessionStorage.removeItem('guard_session');window.location.href='guard-login.html';};
+
+// Initial load
+loadDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guard Dashboard — Alliance University</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0A0F1E;--s1:#111827;--s2:#1F2937;--bdr:#2D3748;--bdr2:#374151;--tx:#F9FAFB;--mu:#9CA3AF;--a:#3B82F6;--ok:#10B981;--er:#EF4444;--wn:#F59E0B}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:100vh;color:var(--tx)}
+    .mono{font-family:'JetBrains Mono',monospace}
+    .topbar{background:var(--s1);border-bottom:1px solid var(--bdr);height:62px;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+    .tl{display:flex;align-items:center;gap:12px}
+    .tlogo{width:36px;height:36px;background:var(--a);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .tr{display:flex;align-items:center;gap:14px}
+    .live-b{display:flex;align-items:center;gap:6px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--ok)}
+    .ldot{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:ld 1.5s infinite}
+    @keyframes ld{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+    .guard-chip{background:var(--s2);border:1px solid var(--bdr2);border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer}
+    .lay{display:grid;grid-template-columns:1fr 400px;height:calc(100vh - 62px)}
+    @media(max-width:960px){.lay{grid-template-columns:1fr;height:auto}}
+    .lp{padding:24px;border-right:1px solid var(--bdr);display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+    .rp{padding:24px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+    .plbl{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--mu);text-transform:uppercase}
+    .sc{background:var(--s1);border:1px solid var(--bdr);border-radius:20px;overflow:hidden;position:relative;flex:1;min-height:340px;max-height:500px}
+    #qrr video{width:100%;height:100%;object-fit:cover}
+    .sov{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center}
+    .sfr{width:220px;height:220px;position:relative}
+    .sfr::before,.sfr::after,.sfr span::before,.sfr span::after{content:'';position:absolute;width:32px;height:32px;border-color:var(--a);border-style:solid}
+    .sfr::before{top:0;left:0;border-width:3px 0 0 3px;border-radius:3px 0 0 0}
+    .sfr::after{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 3px 0 0}
+    .sfr span::before{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 3px}
+    .sfr span::after{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 3px 0}
+    .sln{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,var(--a),transparent);animation:sm 2s ease-in-out infinite;top:0}
+    @keyframes sm{0%{top:8px;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:210px;opacity:0}}
+    .idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--s1);gap:12px}
+    .idle-icon{color:var(--bdr2)}
+    .idle-txt{font-size:14px;color:var(--mu);text-align:center;max-width:200px;line-height:1.6}
+    .sctrl{display:flex;gap:10px}
+    .btnsc{flex:1;padding:13px;background:var(--a);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s}
+    .btnsc:hover{background:#1D4ED8}
+    .btnsc:disabled{background:var(--bdr);color:var(--mu);cursor:not-allowed}
+    .btnst{flex:1;padding:13px;background:transparent;color:var(--er);border:1.5px solid rgba(239,68,68,.4);border-radius:12px;font-size:14px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s}
+    .btnst:hover{background:rgba(239,68,68,.1)}
+    .inforow{background:var(--s1);border:1px solid var(--bdr);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px}
+    .stats4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .sc4{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:14px}
+    .sv{font-size:26px;font-weight:800;font-family:'JetBrains Mono',monospace}
+    .sk{font-size:11px;color:var(--mu);margin-top:2px;font-weight:600}
+    .sc4.g .sv{color:var(--ok)}
+    .sc4.y .sv{color:var(--wn)}
+    .sc4.r .sv{color:var(--er)}
+    .sc4.b .sv{color:var(--a)}
+    .ldcard{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;padding:36px 20px;text-align:center;display:none}
+    .ldcard.on{display:block}
+    .ldsp{width:38px;height:38px;border:3px solid var(--bdr);border-top-color:var(--a);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .ercard{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:16px;padding:20px;text-align:center;display:none}
+    .ercard.on{display:block}
+    .vcard{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;overflow:hidden;display:none}
+    .vcard.on{display:block}
+    .vch{padding:14px 18px;background:var(--s2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+    .vcb{padding:18px}
+    .vname{font-size:22px;font-weight:800;margin-bottom:3px}
+    .vmeta{font-size:12px;color:var(--mu);margin-bottom:18px}
+    .vgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+    .vi{background:var(--bg);border:1px solid var(--bdr);border-radius:10px;padding:11px}
+    .vilbl{font-size:10px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+    .vival{font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;word-break:break-all}
+    .abrow{display:flex;gap:10px}
+    .btnok{flex:1;padding:15px;background:var(--ok);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+    .btnok:hover{background:#059669;transform:translateY(-1px);box-shadow:0 6px 20px rgba(16,185,129,.3)}
+    .btnok:disabled{background:var(--bdr);cursor:not-allowed;transform:none;box-shadow:none}
+    .btnno{flex:1;padding:15px;background:rgba(239,68,68,.1);color:var(--er);border:1.5px solid rgba(239,68,68,.3);border-radius:12px;font-size:15px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
+    .btnno:hover{background:rgba(239,68,68,.2)}
+    .checkout-btn{width:100%;padding:12px;background:rgba(245,158,11,.1);color:var(--wn);border:1.5px solid rgba(245,158,11,.3);border-radius:10px;font-size:13px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;margin-top:8px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+    .checkout-btn:hover{background:rgba(245,158,11,.2)}
+    .stbdg{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+    .spend{background:rgba(245,158,11,.2);color:var(--wn);border:1px solid rgba(245,158,11,.3)}
+    .sok{background:rgba(16,185,129,.2);color:var(--ok);border:1px solid rgba(16,185,129,.3)}
+    .ser{background:rgba(239,68,68,.2);color:var(--er);border:1px solid rgba(239,68,68,.3)}
+    .bdot2{width:6px;height:6px;border-radius:50%;background:currentColor}
+    .logcard{background:var(--s1);border:1px solid var(--bdr);border-radius:16px;overflow:hidden}
+    .lghd{padding:12px 16px;border-bottom:1px solid var(--bdr);font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.06em}
+    .lge{padding:11px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+    .lge:last-child{border-bottom:none}
+    .lgd{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .lgd.g{background:var(--ok)} .lgd.r{background:var(--er)} .lgd.y{background:var(--wn)}
+    .lgn{font-size:13px;font-weight:600;flex:1}
+    .lgt{font-size:11px;color:var(--mu);font-family:'JetBrains Mono',monospace}
+    .lgempty{padding:20px;font-size:13px;color:var(--mu);text-align:center}
+    .sovlay{position:fixed;inset:0;background:rgba(10,15,30,.88);display:flex;align-items:center;justify-content:center;z-index:999;opacity:0;pointer-events:none;transition:opacity .3s}
+    .sovlay.on{opacity:1;pointer-events:all}
+    .sbox{background:var(--s1);border:1px solid var(--ok);border-radius:24px;padding:38px;text-align:center;max-width:340px;width:90%;transform:scale(.9);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+    .sovlay.on .sbox{transform:scale(1)}
+    .sck{width:72px;height:72px;background:rgba(16,185,129,.15);border:2px solid var(--ok);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:#1F2937;color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;transition:transform .4s cubic-bezier(.34,1.56,.64,1);z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+    .toast.show{transform:translateX(-50%) translateY(0)}
+    .toast.ok{background:#065F46}
+    .toast.er{background:#7F1D1D}
+    .toast.wn{background:#78350F}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+    .tab-row{display:flex;border-bottom:1px solid var(--bdr);margin-bottom:0}
+    .tab{flex:1;padding:11px;text-align:center;font-size:12px;font-weight:700;color:var(--mu);cursor:pointer;transition:all .2s;border-bottom:2px solid transparent}
+    .tab.on{color:var(--a);border-bottom-color:var(--a)}
+    .tab-pane{display:none}
+    .tab-pane.on{display:flex;flex-direction:column;gap:14px;padding-top:14px}
+    .search-row{display:flex;gap:8px}
+    .srch{flex:1;padding:10px 14px;background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;color:var(--tx);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none}
+    .srch:focus{border-color:var(--a)}
+    .srch::placeholder{color:#4B5563}
+    .vrow{background:var(--s2);border:1px solid var(--bdr);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .2s}
+    .vrow:hover{border-color:var(--a)}
+    .vav{width:36px;height:36px;border-radius:50%;background:var(--a);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+    .vnm{font-size:14px;font-weight:700}
+    .vsu{font-size:11px;color:var(--mu)}
+    .no-results{text-align:center;padding:20px;font-size:13px;color:var(--mu)}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tl">
+    <div class="tlogo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div><div style="font-size:15px;font-weight:700">Security Dashboard</div><div style="font-size:11px;color:var(--mu)" id="guardGate">Alliance University</div></div>
+  </div>
+  <div class="tr">
+    <div class="live-b"><div class="ldot"></div>LIVE</div>
+    <div class="mono" style="font-size:13px;color:var(--mu)" id="clk">--:--:--</div>
+    <div class="guard-chip" onclick="logout()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span id="guardName" style="font-weight:600">Guard</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+    </div>
+  </div>
+</div>
+
+<div class="lay">
+  <!-- Left: Scanner -->
+  <div class="lp">
+    <div class="plbl">QR Code Scanner</div>
+    <div class="sc">
+      <div class="idle" id="idle">
+        <svg class="idle-icon" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="19" y="14" width="2" height="2"/><rect x="17" y="19" width="4" height="2" rx=".5"/></svg>
+        <div class="idle-txt">Click Start Scanner to activate camera</div>
+      </div>
+      <div id="qrr" style="display:none;width:100%;height:100%"></div>
+      <div class="sov" id="sov" style="display:none"><div class="sfr"><span></span><div class="sln"></div></div></div>
+    </div>
+    <div class="sctrl">
+      <button class="btnsc" id="btnst" onclick="startScan()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Start Scanner
+      </button>
+      <button class="btnst" id="btnsp" style="display:none" onclick="stopScan()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Stop
+      </button>
+    </div>
+    <div class="inforow">
+      <span style="font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap">Last Scan:</span>
+      <span class="mono" style="font-size:11px;color:var(--tx);word-break:break-all" id="lstid">—</span>
+    </div>
+
+    <!-- Tabs: Today's log + Search -->
+    <div style="background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden">
+      <div class="tab-row">
+        <div class="tab on" id="tab-log" onclick="switchTab('log')">Today's Log</div>
+        <div class="tab" id="tab-search" onclick="switchTab('search')">Search Visitor</div>
+      </div>
+      <div style="padding:0 14px 14px">
+        <div class="tab-pane on" id="pane-log">
+          <div id="actlog"><div class="lgempty">No activity yet today.</div></div>
+        </div>
+        <div class="tab-pane" id="pane-search">
+          <div class="search-row">
+            <input class="srch" id="srchq" placeholder="Search by name or phone..." oninput="doSearch()"/>
+          </div>
+          <div id="srchres"><div class="no-results">Type to search visitors.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Visitor info -->
+  <div class="rp">
+    <div class="plbl">Visitor Verification</div>
+
+    <div class="stats4">
+      <div class="sc4 g"><div class="sv" id="capp">0</div><div class="sk">Approved Today</div></div>
+      <div class="sc4 r"><div class="sv" id="cden">0</div><div class="sk">Denied Today</div></div>
+      <div class="sc4 y"><div class="sv" id="cpend">0</div><div class="sk">Pending</div></div>
+      <div class="sc4 b"><div class="sv" id="cout">0</div><div class="sk">Checked Out</div></div>
+    </div>
+
+    <div class="ldcard" id="ldcard"><div class="ldsp"></div><div style="font-size:14px;color:var(--mu)">Fetching visitor details...</div></div>
+    <div class="ercard" id="ercard">
+      <div style="font-size:28px;margin-bottom:8px">⚠️</div>
+      <div style="font-size:15px;font-weight:700;color:var(--er);margin-bottom:4px">QR Code Not Found</div>
+      <div style="font-size:12px;color:#FCA5A5;line-height:1.5" id="ermsg">This QR code is invalid or does not exist.</div>
+    </div>
+
+    <div class="vcard" id="vcard">
+      <div class="vch">
+        <span style="font-size:14px;font-weight:700">Visitor Details</span>
+        <span class="stbdg spend" id="vstbdg"><span class="bdot2"></span><span id="vstxt">Pending</span></span>
+      </div>
+      <div class="vcb">
+        <div class="vname" id="vn">—</div>
+        <div class="vmeta">Scanned at <span id="vsct">—</span></div>
+        <div class="vgrid">
+          <div class="vi"><div class="vilbl">Phone</div><div class="vival" id="vph">—</div></div>
+          <div class="vi"><div class="vilbl">ID Proof</div><div class="vival" id="vid">—</div></div>
+          <div class="vi"><div class="vilbl">Visiting</div><div class="vival" id="vhi">—</div></div>
+          <div class="vi"><div class="vilbl">Purpose</div><div class="vival" id="vpu">—</div></div>
+          <div class="vi"><div class="vilbl">Vehicle</div><div class="vival" id="vvn">—</div></div>
+          <div class="vi"><div class="vilbl">Companions</div><div class="vival" id="vco">—</div></div>
+        </div>
+        <div class="abrow" id="abrow">
+          <button class="btnok" id="btnal" onclick="doAllow()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Allow Entry
+          </button>
+          <button class="btnno" onclick="doDeny()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Deny
+          </button>
+        </div>
+        <button class="checkout-btn" id="chkout-btn" style="display:none" onclick="doCheckout()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Mark as Checked Out
+        </button>
+      </div>
+    </div>
+
+    <div class="logcard">
+      <div class="lghd">Recent Scans</div>
+      <div id="sclog"><div class="lgempty">Scan a QR code to begin.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Success overlay -->
+<div class="sovlay" id="sovlay">
+  <div class="sbox">
+    <div class="sck"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div style="font-size:22px;font-weight:800;color:var(--ok);margin-bottom:6px">Entry Approved!</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px" id="ovnm">—</div>
+    <div style="font-size:13px;color:var(--mu);margin-bottom:24px" id="ovmt">—</div>
+    <button style="width:100%;padding:14px;background:var(--ok);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer" onclick="closeOv()">Scan Next Visitor</button>
+  </div>
+</div>
+
+<div class="toast" id="tst"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, where, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const db = getFirestore(initializeApp({apiKey:"AIzaSyAIDj0Je6k2iUe5IAsikiyeaQJFkz1ULL8",authDomain:"security-management-fefd8.firebaseapp.com",projectId:"security-management-fefd8",storageBucket:"security-management-fefd8.firebasestorage.app",messagingSenderId:"1031606708630",appId:"1:1031606708630:web:21e5b56092f380320f95b7"}));
+
+// Session check
+const sess=JSON.parse(sessionStorage.getItem('guard_session')||'null');
+if(!sess||sess.role==='admin'){window.location.href='guard-login.html';}
+document.getElementById('guardName').textContent=sess?sess.name:'Guard';
+document.getElementById('guardGate').textContent=sess?(sess.gate+' — '+sess.name):'Alliance University';
+
+// Clock
+setInterval(()=>{document.getElementById('clk').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})},1000);
+
+// Toast
+const T=(m,t='')=>{const e=document.getElementById('tst');e.textContent=m;e.className='toast '+t;setTimeout(()=>e.classList.add('show'),10);setTimeout(()=>e.classList.remove('show'),3500)};
+
+let scanner=null,scanning=false,curId=null,curData=null;
+let aCount=0,dCount=0,pCount=0,oCount=0;
+
+// Load today's stats
+async function loadStats(){
+  try{
+    const all=await getDocs(collection(db,'visitors'));
+    let a=0,d=0,p=0,o=0;
+    const today=new Date().toDateString();
+    all.forEach(doc=>{
+      const dat=doc.data();
+      const ts=dat.timestamp?.toDate?.();
+      if(!ts||ts.toDateString()!==today) return;
+      if(dat.status==='Checked In') a++;
+      else if(dat.status==='Denied') d++;
+      else if(dat.status==='Pending') p++;
+      else if(dat.status==='Checked Out') o++;
+    });
+    aCount=a;dCount=d;pCount=p;oCount=o;
+    document.getElementById('capp').textContent=a;
+    document.getElementById('cden').textContent=d;
+    document.getElementById('cpend').textContent=p;
+    document.getElementById('cout').textContent=o;
+  }catch(e){}
+}
+loadStats();
+
+// Scanner
+window.startScan=()=>{
+  document.getElementById('idle').style.display='none';
+  document.getElementById('qrr').style.display='block';
+  document.getElementById('sov').style.display='flex';
+  document.getElementById('btnst').style.display='none';
+  document.getElementById('btnsp').style.display='flex';
+  scanner=new Html5Qrcode('qrr');
+  scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},onScan,()=>{})
+    .then(()=>{scanning=true;T('Camera active. Hold QR code steady.');})
+    .catch(e=>{T('Camera error: '+e,'er');stopScan();});
+};
+
+window.stopScan=async()=>{
+  if(scanner&&scanning){try{await scanner.stop();}catch(e){}scanner=null;scanning=false;}
+  document.getElementById('idle').style.display='flex';
+  document.getElementById('qrr').style.display='none';
+  document.getElementById('sov').style.display='none';
+  document.getElementById('btnst').style.display='flex';
+  document.getElementById('btnsp').style.display='none';
+};
+
+async function onScan(txt){
+  if(!scanning)return;
+  scanning=false;
+  try{await scanner.pause();}catch(e){}
+  document.getElementById('lstid').textContent=txt;
+  hideCards();
+  document.getElementById('ldcard').classList.add('on');
+  try{
+    const snap=await getDoc(doc(db,'visitors',txt));
+    document.getElementById('ldcard').classList.remove('on');
+    if(!snap.exists()){
+      document.getElementById('ercard').classList.add('on');
+      document.getElementById('ermsg').textContent='No visitor found for ID: '+txt;
+      T('QR not found in database.','er');
+      scanning=true;return;
+    }
+    curId=txt;curData=snap.data();
+    showVisitor(txt,curData);
+  }catch(e){
+    document.getElementById('ldcard').classList.remove('on');
+    document.getElementById('ercard').classList.add('on');
+    document.getElementById('ermsg').textContent='Database error: '+e.message;
+    T('Database error.','er');scanning=true;
+  }
+}
+
+function hideCards(){
+  document.getElementById('vcard').classList.remove('on');
+  document.getElementById('ldcard').classList.remove('on');
+  document.getElementById('ercard').classList.remove('on');
+}
+
+function showVisitor(id,d){
+  document.getElementById('vcard').classList.add('on');
+  document.getElementById('vn').textContent=d.visitorName||'—';
+  document.getElementById('vph').textContent=d.phone||'—';
+  document.getElementById('vid').textContent=(d.idType||'—');
+  document.getElementById('vhi').textContent=(d.hostName||'')+(d.hostId?' ('+d.hostId+')':'');
+  document.getElementById('vpu').textContent=d.purpose||'—';
+  document.getElementById('vvn').textContent=d.vehicleNumber||'None';
+  document.getElementById('vco').textContent=(d.companions||0)+' person(s)';
+  document.getElementById('vsct').textContent=new Date().toLocaleTimeString('en-IN');
+  const bdg=document.getElementById('vstbdg');
+  document.getElementById('vstxt').textContent=d.status;
+  bdg.className='stbdg '+(d.status==='Checked In'?'sok':d.status==='Denied'?'ser':'spend');
+  document.getElementById('abrow').style.display=d.status==='Pending'?'flex':'none';
+  document.getElementById('chkout-btn').style.display=d.status==='Checked In'?'block':'none';
+}
+
+window.doAllow=async()=>{
+  if(!curId)return;
+  const btn=document.getElementById('btnal');btn.disabled=true;btn.innerHTML='<div class="ldsp" style="width:18px;height:18px;border-width:2.5px"></div> Processing...';
+  try{
+    await updateDoc(doc(db,'visitors',curId),{status:'Checked In',entryTime:new Date().toISOString(),approvedBy:sess.name,approvedGate:sess.gate});
+    aCount++;document.getElementById('capp').textContent=aCount;
+    addLog(curData.visitorName,'g','Entry Approved');
+    addActivityLog(curData.visitorName,'g','Approved');
+    document.getElementById('ovnm').textContent=curData.visitorName;
+    document.getElementById('ovmt').textContent='Visiting: '+curData.hostName+' · '+curData.purpose;
+    document.getElementById('sovlay').classList.add('on');
+    hideCards();curId=null;curData=null;
+  }catch(e){T('Update failed: '+e.message,'er');btn.disabled=false;btn.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Allow Entry';}
+};
+
+window.doDeny=async()=>{
+  if(!curId)return;
+  try{await updateDoc(doc(db,'visitors',curId),{status:'Denied',deniedBy:sess.name});}catch(e){}
+  dCount++;document.getElementById('cden').textContent=dCount;
+  addLog(curData?.visitorName||'Unknown','r','Entry Denied');
+  addActivityLog(curData?.visitorName||'Unknown','r','Denied');
+  T('Visitor denied entry.','er');
+  hideCards();curId=null;curData=null;scanning=true;
+  if(scanner){try{await scanner.resume();}catch(e){}}
+};
+
+window.doCheckout=async()=>{
+  if(!curId)return;
+  try{await updateDoc(doc(db,'visitors',curId),{status:'Checked Out',exitTime:new Date().toISOString()});}catch(e){}
+  oCount++;document.getElementById('cout').textContent=oCount;
+  addLog(curData?.visitorName||'Unknown','y','Checked Out');
+  T('✓ Visitor checked out.','ok');
+  hideCards();curId=null;curData=null;scanning=true;
+  if(scanner){try{await scanner.resume();}catch(e){}}
+};
+
+window.closeOv=async()=>{
+  document.getElementById('sovlay').classList.remove('on');
+  document.getElementById('btnal').disabled=false;
+  document.getElementById('btnal').innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Allow Entry';
+  scanning=true;if(scanner){try{await scanner.resume();}catch(e){}}
+};
+
+function addLog(name,col,action){
+  const log=document.getElementById('sclog');
+  const empty=log.querySelector('.lgempty');if(empty)empty.remove();
+  const e=document.createElement('div');e.className='lge';
+  e.innerHTML=`<div class="lgd ${col}"></div><div class="lgn">${name}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><div class="lgt">${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div><div style="font-size:10px;color:${col==='g'?'var(--ok)':col==='r'?'var(--er)':'var(--wn)'};font-weight:700">${action}</div></div>`;
+  log.insertBefore(e,log.firstChild);
+  const ents=log.querySelectorAll('.lge');if(ents.length>8)ents[ents.length-1].remove();
+}
+
+function addActivityLog(name,col,action){
+  const log=document.getElementById('actlog');
+  const empty=log.querySelector('.lgempty');if(empty)empty.remove();
+  const e=document.createElement('div');e.className='lge';
+  e.innerHTML=`<div class="lgd ${col}"></div><div class="lgn">${name}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><div class="lgt">${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div><div style="font-size:10px;color:${col==='g'?'var(--ok)':col==='r'?'var(--er)':'var(--wn)'};font-weight:700">${action}</div></div>`;
+  log.insertBefore(e,log.firstChild);
+}
+
+// Tabs
+window.switchTab=(t)=>{
+  ['log','search'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('on',x===t);
+    document.getElementById('pane-'+x).classList.toggle('on',x===t);
+  });
+};
+
+// Search
+window.doSearch=async()=>{
+  const q=document.getElementById('srchq').value.trim().toLowerCase();
+  const res=document.getElementById('srchres');
+  if(!q){res.innerHTML='<div class="no-results">Type to search visitors.</div>';return;}
+  res.innerHTML='<div class="no-results">Searching...</div>';
+  try{
+    const all=await getDocs(collection(db,'visitors'));
+    const hits=[];
+    all.forEach(d=>{const dat=d.data();if((dat.visitorName||'').toLowerCase().includes(q)||(dat.phone||'').includes(q))hits.push({id:d.id,...dat})});
+    if(!hits.length){res.innerHTML='<div class="no-results">No visitors found.</div>';return;}
+    res.innerHTML='';
+    hits.slice(0,8).forEach(h=>{
+      const el=document.createElement('div');el.className='vrow';
+      const init=(h.visitorName||'?')[0].toUpperCase();
+      const scol=h.status==='Checked In'?'var(--ok)':h.status==='Denied'?'var(--er)':'var(--wn)';
+      el.innerHTML=`<div class="vav">${init}</div><div style="flex:1"><div class="vnm">${h.visitorName}</div><div class="vsu">${h.phone} · ${h.purpose||'—'}</div></div><div style="font-size:11px;font-weight:700;color:${scol}">${h.status}</div>`;
+      el.onclick=()=>{curId=h.id;curData=h;showVisitor(h.id,h);document.getElementById('ldcard').classList.remove('on');};
+      res.appendChild(el);
+    });
+  }catch(e){res.innerHTML='<div class="no-results">Search error: '+e.message+'</div>';}
+};
+
+window.logout=async()=>{
+  if(!confirm('End shift and logout?'))return;
+  sessionStorage.removeItem('guard_session');
+  window.location.href='guard-login.html';
+};
+</script>
+</body>
+</html>

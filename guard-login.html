@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guard Login — Alliance University</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:#0A0F1E;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+    body::before{content:'';position:absolute;top:-200px;left:-200px;width:500px;height:500px;background:radial-gradient(circle,rgba(37,99,235,.15),transparent 70%);pointer-events:none}
+    body::after{content:'';position:absolute;bottom:-150px;right:-150px;width:400px;height:400px;background:radial-gradient(circle,rgba(16,185,129,.1),transparent 70%);pointer-events:none}
+    .box{background:#111827;border:1px solid #1F2937;border-radius:24px;padding:40px 36px;width:100%;max-width:420px;position:relative;z-index:1;box-shadow:0 25px 60px rgba(0,0,0,.5)}
+    .logo{width:56px;height:56px;background:#2563EB;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+    .title{text-align:center;font-size:22px;font-weight:800;color:#F9FAFB;margin-bottom:6px}
+    .sub{text-align:center;font-size:13px;color:#6B7280;margin-bottom:32px;line-height:1.5}
+    .role-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px}
+    .rtab{padding:10px;border-radius:10px;border:1.5px solid #1F2937;text-align:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:#6B7280}
+    .rtab.on{background:#1D4ED8;border-color:#2563EB;color:#fff}
+    .fld{margin-bottom:16px}
+    .fld label{display:block;font-size:12px;font-weight:700;color:#9CA3AF;margin-bottom:6px;letter-spacing:.02em}
+    .fld input{width:100%;padding:13px 14px;background:#1F2937;border:1.5px solid #374151;border-radius:10px;color:#F9FAFB;font-size:15px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:all .2s}
+    .fld input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+    .fld input::placeholder{color:#4B5563}
+    .prow{position:relative}
+    .peye{position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6B7280;background:none;border:none}
+    .err-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#FCA5A5;margin-bottom:16px;display:none}
+    .btn{width:100%;padding:14px;background:#2563EB;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+    .btn:hover{background:#1D4ED8;box-shadow:0 4px 14px rgba(37,99,235,.4)}
+    .btn:disabled{background:#374151;cursor:not-allowed;box-shadow:none}
+    .sp{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#1F2937}
+    .divider span{font-size:11px;color:#4B5563}
+    .demo-creds{background:#0F172A;border:1px solid #1F2937;border-radius:10px;padding:14px}
+    .demo-title{font-size:11px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+    .dcred{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;cursor:pointer;padding:4px 0}
+    .dcred:last-child{margin-bottom:0}
+    .dname{font-size:12px;font-weight:600;color:#9CA3AF}
+    .dval{font-size:11px;color:#6B7280;font-family:'JetBrains Mono',monospace}
+    .dcred:hover .dval{color:#60A5FA}
+    .footer-link{text-align:center;margin-top:20px;font-size:12px;color:#4B5563}
+    .footer-link a{color:#60A5FA;text-decoration:none;font-weight:600}
+    .mono{font-family:'JetBrains Mono',monospace}
+  </style>
+</head>
+<body>
+<div class="box">
+  <div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+  <div class="title">Security Portal</div>
+  <div class="sub">Alliance University Campus Security<br/>Authorized Personnel Only</div>
+
+  <div class="role-tabs">
+    <div class="rtab on" id="tab-guard" onclick="setRole('guard')">🛡️ Guard</div>
+    <div class="rtab" id="tab-admin" onclick="setRole('admin')">⚙️ Admin</div>
+  </div>
+
+  <div class="err-msg" id="errmsg"></div>
+
+  <div class="fld">
+    <label>Guard ID / Username</label>
+    <input type="text" id="uid" placeholder="Enter your Guard ID" class="mono" autocomplete="username"/>
+  </div>
+  <div class="fld">
+    <label>Password</label>
+    <div class="prow">
+      <input type="password" id="pwd" placeholder="Enter password" autocomplete="current-password"/>
+      <button class="peye" onclick="togglePwd()" type="button" id="eyebtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="fld" id="gate-fld">
+    <label>Assigned Gate</label>
+    <select id="gate" style="width:100%;padding:13px 14px;background:#1F2937;border:1.5px solid #374151;border-radius:10px;color:#F9FAFB;font-size:15px;font-family:'Plus Jakarta Sans',sans-serif;outline:none">
+      <option value="Gate 1">Gate 1 — Main Entrance</option>
+      <option value="Gate 2">Gate 2 — North Block</option>
+      <option value="Gate 3">Gate 3 — Hostel Entry</option>
+      <option value="Gate 4">Gate 4 — Staff Entry</option>
+    </select>
+  </div>
+
+  <button class="btn" id="loginbtn" onclick="doLogin()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+    Sign In
+  </button>
+
+  <div class="divider"><span>Demo Credentials</span></div>
+  <div class="demo-creds">
+    <div class="demo-title">Click to auto-fill</div>
+    <div class="dcred" onclick="fill('GUARD001','guard123','guard')">
+      <span class="dname">🛡️ Security Guard</span>
+      <span class="dval">GUARD001 / guard123</span>
+    </div>
+    <div class="dcred" onclick="fill('GUARD002','guard456','guard')">
+      <span class="dname">🛡️ Night Guard</span>
+      <span class="dval">GUARD002 / guard456</span>
+    </div>
+    <div class="dcred" onclick="fill('ADMIN001','admin@2024','admin')">
+      <span class="dname">⚙️ Admin</span>
+      <span class="dval">ADMIN001 / admin@2024</span>
+    </div>
+  </div>
+
+  <div class="footer-link">
+    <a href="index.html">← Visitor Registration Portal</a>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const db = getFirestore(initializeApp({apiKey:"AIzaSyAIDj0Je6k2iUe5IAsikiyeaQJFkz1ULL8",authDomain:"security-management-fefd8.firebaseapp.com",projectId:"security-management-fefd8",storageBucket:"security-management-fefd8.firebasestorage.app",messagingSenderId:"1031606708630",appId:"1:1031606708630:web:21e5b56092f380320f95b7"}));
+
+// Static credentials (in production use Firebase Auth)
+const GUARDS = {
+  'GUARD001':{password:'guard123',name:'Rajesh Kumar',role:'guard'},
+  'GUARD002':{password:'guard456',name:'Suresh Sharma',role:'guard'},
+  'ADMIN001':{password:'admin@2024',name:'Admin User',role:'admin'}
+};
+
+let curRole='guard';
+
+window.setRole=r=>{
+  curRole=r;
+  document.getElementById('tab-guard').classList.toggle('on',r==='guard');
+  document.getElementById('tab-admin').classList.toggle('on',r==='admin');
+  document.getElementById('gate-fld').style.display=r==='guard'?'block':'none';
+  document.getElementById('uid').placeholder=r==='guard'?'Enter your Guard ID':'Enter Admin username';
+};
+
+window.togglePwd=()=>{
+  const i=document.getElementById('pwd');
+  i.type=i.type==='password'?'text':'password';
+};
+
+window.fill=(u,p,r)=>{
+  setRole(r);
+  document.getElementById('uid').value=u;
+  document.getElementById('pwd').value=p;
+};
+
+window.doLogin=async()=>{
+  const uid=document.getElementById('uid').value.trim();
+  const pwd=document.getElementById('pwd').value;
+  const errdiv=document.getElementById('errmsg');
+  errdiv.style.display='none';
+
+  if(!uid||!pwd){errdiv.textContent='Please enter both ID and password.';errdiv.style.display='block';return;}
+
+  const btn=document.getElementById('loginbtn');
+  btn.disabled=true;btn.innerHTML='<div class="sp"></div> Verifying...';
+
+  // Simulate network delay
+  await new Promise(r=>setTimeout(r,800));
+
+  const guard=GUARDS[uid];
+  if(!guard||guard.password!==pwd||guard.role!==curRole){
+    errdiv.textContent='Invalid credentials. Please try again.';
+    errdiv.style.display='block';
+    btn.disabled=false;btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Sign In';
+    return;
+  }
+
+  // Log the shift start in Firestore
+  const gate=document.getElementById('gate').value;
+  try{
+    await addDoc(collection(db,'guard_shifts'),{
+      guardId:uid,guardName:guard.name,role:guard.role,gate,
+      loginTime:serverTimestamp(),status:'Active'
+    });
+  }catch(e){}
+
+  // Store session
+  sessionStorage.setItem('guard_session',JSON.stringify({
+    id:uid,name:guard.name,role:guard.role,
+    gate:guard.role==='guard'?gate:'All',
+    loginTime:new Date().toISOString()
+  }));
+
+  // Redirect
+  window.location.href=guard.role==='admin'?'admin.html':'guard.html';
+};
+</script>
+</body>
+</html>
