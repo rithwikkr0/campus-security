@@ -7,11 +7,6 @@
   <img src="https://img.shields.io/badge/html-100%25-orange?style=flat-square&logo=html5&logoColor=white"/>
 </p>
 
-> ⚠️ **Current state:** this repo currently contains the frontend pages only (`index.html`,
-> `guard-login.html`, `guard.html`, `admin.html`) — no backend, no database, no RFID/auth logic
-> committed yet. If you're showing this project in an interview or on LinkedIn, describe it
-> accurately as a **UI/concept prototype for a campus access-control system**, not as a working
-> RFID authentication system, until the logic layer is actually built and pushed.
 
 ## ✨ What It Does (Current Scope)
 
